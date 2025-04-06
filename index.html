@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  rel="stylesheet"
+/>
   <title>Secure Password Generator</title>
   <style>
     body {
@@ -185,6 +189,28 @@
     .dark-mode .credit a {
       color: #66bfff;
     }
+    .social-media {
+    margin-top: 10px;
+    text-align: center;
+  }
+  .social-media a {
+    margin: 0 10px;
+    color: #007bff;
+    font-size: 24px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  .social-media a:hover {
+    color: #0056b3;
+  }
+
+  /* Dark mode overrides */
+  .dark-mode .social-media a {
+    color: #66bfff;
+  }
+  .dark-mode .social-media a:hover {
+    color: #3399ff;
+  }
   </style>
 </head>
 <body>
@@ -219,7 +245,19 @@
   </div>
 
   <div class="credit">
-    Made with ❤️ by <a href="https://www.youtube.com/@CryptooChai" target="_blank">@CryptooChai</a>
+    Made with ❤️ by <a href="https://www.youtube.com/@CryptooChai" target="_blank">CryptooChai</a>
+  </div>
+
+  <div class="social-media">
+    <a href="https://x.com/CryptooChai" target="_blank" title="Follow on X">
+      <i class="fab fa-x-twitter"></i>
+    </a>
+    <a href="https://www.youtube.com/@CryptooChai" target="_blank" title="Subscribe on YouTube">
+      <i class="fab fa-youtube"></i>
+    </a>
+    <a href="https://instagram.com/CryptooChaii" target="_blank" title="Follow on Instagram">
+      <i class="fab fa-instagram"></i>
+    </a>
   </div>
 
   <script>
