@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Password Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 100%;
+      position: relative;
+    }
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    .container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .result {
+      background: #eaeaea;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      cursor: pointer;
+      text-align: center;
+      word-break: break-all;
+    }
+    .copied {
+      color: green;
+      font-size: 14px;
+      text-align: center;
+    }
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      border: 1px solid #007bff;
+      background: #ffffff;
+      color: #007bff;
+      border-radius: 5px 5px 0 0;
+    }
+    .tab.active {
+      background: #007bff;
+      color: white;
+    }
+    .controls label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .controls input[type="range"] {
+      width: 100%;
+    }
+    .controls button,
+    .controls input[type="checkbox"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .controls input[type="checkbox"] {
+      width: auto;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .controls .checkbox-group {
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    .controls button:hover {
+      background: #0056b3;
+    }
+    .credit {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+    .credit a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .credit a:hover {
+      text-decoration: underline;
+    }
+    .info {
+      max-width: 400px;
+      text-align: center;
+      font-size: 13px;
+      color: #444;
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .dark-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    .password-strength {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .dark-mode .container {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .dark-mode .result {
+      background-color: #444;
+      color: #fff;
+    }
+    
+    .dark-mode .tab {
+      background-color: #333;
+      color: #fff;
+      border-color: #555;
+    }
+    
+    .dark-mode .tab.active {
+      background-color: #555;
+      color: #fff;
+    }
+    
+    .dark-mode .controls button {
+      background-color: #555;
+      color: #fff;
+    }
+    
+    .dark-mode .controls button:hover {
+      background-color: #666;
+    }
+    
+    .dark-mode .password-strength {
+      color: #fff;
+    }
+    /* Fix checkbox group background and label colors in dark mode */
+    .dark-mode .checkbox-group {
+      background-color: #444;
+      color: #fff;
+    }
+    
+    /* Optional: make checkboxes themselves more visible */
+    .dark-mode .checkbox-group input[type="checkbox"] {
+      accent-color: #007bff;
+    }
+    
+    /* Fix info (privacy notice) section in dark mode */
+    .dark-mode .info {
+      background-color: #2a2a2a;
+      color: #ddd;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Fix credit section in dark mode */
+    .dark-mode .credit {
+      color: #aaa;
+    }
+    
+    .dark-mode .credit a {
+      color: #66bfff;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+    <h2>Secure Password Generator</h2>
+    <div class="result" id="passwordDisplay" title="Click to copy"></div>
+    <div class="password-strength" id="passwordStrength"></div>
+    <div class="copied" id="copiedMessage" style="display: none;">Password copied!</div>
+    <div class="controls">
+      <div class="tabs">
+        <div class="tab active" onclick="selectType('secure', this)">🔒 Secure</div>
+        <div class="tab" onclick="selectType('pin', this)">🔢 PIN</div>
+        <div class="tab" onclick="selectType('memorable', this)">🧠 Memorable</div>
+      </div>
+
+      <div class="checkbox-group" id="secureOptions">
+        <label><input type="checkbox" id="includeNumbers" checked /> Include Numbers</label>
+        <label><input type="checkbox" id="includeSymbols" checked /> Include Symbols</label>
+      </div>
+
+      <label for="length">Length: <span id="lengthValue">16</span></label>
+      <input type="range" id="length" min="4" max="50" value="16" />
+
+      <button onclick="generatePassword()">Generate Password</button>
+    </div>
+  </div>
+
+  <div class="info">
+    <p><strong>Privacy Note:</strong> Your passwords are generated locally on your device and are never stored or transmitted. You can safely use this tool without any privacy concerns.</p>
+    <p>For best security practices, use unique passwords for each of your accounts and consider using a password manager.</p>
+  </div>
+
+  <div class="credit">
+    Made with ❤️ by <a href="https://www.youtube.com/@CryptooChai" target="_blank">CryptooChai</a>
+  </div>
+
+  <script>
+    const passwordDisplay = document.getElementById("passwordDisplay");
+    const copiedMessage = document.getElementById("copiedMessage");
+    const lengthSlider = document.getElementById("length");
+    const lengthValue = document.getElementById("lengthValue");
+    const secureOptions = document.getElementById("secureOptions");
+    const strengthDisplay = document.getElementById("passwordStrength");
+    const wordList = [
+  "banana", "table", "rocket", "pizza", "monkey", "sun", "river", "cloud", "candle", "bottle",
+  "mountain", "forest", "ocean", "planet", "coffee", "keyboard", "notebook", "window", "camera", "moon",
+  "storm", "tiger", "eagle", "orange", "penguin", "waffle", "honey", "pebble", "lantern", "zebra",
+  "bridge", "castle", "jungle", "dragon", "phoenix", "helmet", "guitar", "pencil", "rocket", "globe"
+];
+
+    let selectedType = "secure";
+
+    lengthSlider.addEventListener("input", () => {
+      lengthValue.textContent = lengthSlider.value;
+    });
+
+    passwordDisplay.addEventListener("click", () => {
+      const text = passwordDisplay.textContent;
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      copiedMessage.style.display = "block";
+      setTimeout(() => (copiedMessage.style.display = "none"), 2000);
+    });
+
+    function selectType(type, element) {
+      selectedType = type;
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach(tab => tab.classList.remove("active"));
+      element.classList.add("active");
+      secureOptions.style.display = type === "secure" ? "block" : "none";
+    }
+
+    function calculateStrength(password) {
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+      switch (strength) {
+        case 0:
+        case 1:
+          return { label: "Weak", color: "red" };
+        case 2:
+          return { label: "Moderate", color: "orange" };
+        case 3:
+          return { label: "Strong", color: "green" };
+        case 4:
+          return { label: "Very Strong", color: "darkgreen" };
+      }
+    }
+
+    function generatePassword() {
+      const length = parseInt(lengthSlider.value);
+      const includeNumbers = document.getElementById("includeNumbers").checked;
+      const includeSymbols = document.getElementById("includeSymbols").checked;
+      let password = "";
+
+      if (selectedType === "secure") {
+        let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        if (includeNumbers) charset += "0123456789";
+        if (includeSymbols) charset += "!@#$%^&*()_+[]{}|;:,.<>?";
+        for (let i = 0; i < length; i++) {
+          const rand = Math.floor(Math.random() * charset.length);
+          password += charset[rand];
+        }
+      } else if (selectedType === "pin") {
+        for (let i = 0; i < length; i++) {
+          password += Math.floor(Math.random() * 10);
+        }
+      } else if (selectedType === "memorable") {
+        let wordsNeeded = Math.ceil(length / 6);
+        let words = [];
+        for (let i = 0; i < wordsNeeded; i++) {
+          const word = wordList[Math.floor(Math.random() * wordList.length)];
+          words.push(word);
+        }
+        password = words.join("-").slice(0, length);
+      }
+
+      passwordDisplay.textContent = password;
+      copiedMessage.style.display = "none";
+
+      const { label, color } = calculateStrength(password);
+      strengthDisplay.textContent = `Strength: ${label}`;
+      strengthDisplay.style.color = color;
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    selectType("secure", document.querySelector(".tab.active"));
+    generatePassword();
+  </script>
+</body>
+</html>
