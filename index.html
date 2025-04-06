@@ -138,66 +138,53 @@
       margin-top: 10px;
       font-weight: bold;
     }
+
+    /* Dark mode overrides */
     .dark-mode .container {
       background-color: #333;
       color: #fff;
     }
-
     .dark-mode .result {
       background-color: #444;
       color: #fff;
     }
-    
     .dark-mode .tab {
       background-color: #333;
       color: #fff;
       border-color: #555;
     }
-    
     .dark-mode .tab.active {
       background-color: #555;
       color: #fff;
     }
-    
     .dark-mode .controls button {
       background-color: #555;
       color: #fff;
     }
-    
     .dark-mode .controls button:hover {
       background-color: #666;
     }
-    
     .dark-mode .password-strength {
       color: #fff;
     }
-    /* Fix checkbox group background and label colors in dark mode */
     .dark-mode .checkbox-group {
       background-color: #444;
       color: #fff;
     }
-    
-    /* Optional: make checkboxes themselves more visible */
     .dark-mode .checkbox-group input[type="checkbox"] {
       accent-color: #007bff;
     }
-    
-    /* Fix info (privacy notice) section in dark mode */
     .dark-mode .info {
       background-color: #2a2a2a;
       color: #ddd;
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
     }
-    
-    /* Fix credit section in dark mode */
     .dark-mode .credit {
       color: #aaa;
     }
-    
     .dark-mode .credit a {
       color: #66bfff;
     }
-
   </style>
 </head>
 <body>
@@ -232,7 +219,7 @@
   </div>
 
   <div class="credit">
-    Made with ❤️ by <a href="https://www.youtube.com/@CryptooChai" target="_blank">CryptooChai</a>
+    Made with ❤️ by <a href="https://www.youtube.com/@CryptooChai" target="_blank">@CryptooChai</a>
   </div>
 
   <script>
@@ -242,14 +229,13 @@
     const lengthValue = document.getElementById("lengthValue");
     const secureOptions = document.getElementById("secureOptions");
     const strengthDisplay = document.getElementById("passwordStrength");
-    const wordList = [
-  "banana", "table", "rocket", "pizza", "monkey", "sun", "river", "cloud", "candle", "bottle",
-  "mountain", "forest", "ocean", "planet", "coffee", "keyboard", "notebook", "window", "camera", "moon",
-  "storm", "tiger", "eagle", "orange", "penguin", "waffle", "honey", "pebble", "lantern", "zebra",
-  "bridge", "castle", "jungle", "dragon", "phoenix", "helmet", "guitar", "pencil", "rocket", "globe"
-];
 
     let selectedType = "secure";
+
+    const fallbackWordList = [
+      "banana", "table", "rocket", "pizza", "monkey", "sun", "river", "cloud",
+      "candle", "bottle", "ocean", "planet", "coffee", "castle", "guitar", "camera"
+    ];
 
     lengthSlider.addEventListener("input", () => {
       lengthValue.textContent = lengthSlider.value;
@@ -271,27 +257,66 @@
       secureOptions.style.display = type === "secure" ? "block" : "none";
     }
 
-    function calculateStrength(password) {
-      let strength = 0;
-      if (password.length >= 8) strength++;
-      if (/[A-Z]/.test(password)) strength++;
-      if (/[0-9]/.test(password)) strength++;
-      if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    function calculateStrength(password, type) {
+      if (type === "secure") {
+        if (password.length < 9) return { label: "Weak", color: "red" };
+        if (password.length < 15) return { label: "Moderate", color: "orange" };
+        if (password.length < 20) return { label: "Strong", color: "green" };
+        return { label: "Very Strong", color: "darkgreen" };
+      }
 
-      switch (strength) {
-        case 0:
-        case 1:
-          return { label: "Weak", color: "red" };
-        case 2:
-          return { label: "Moderate", color: "orange" };
-        case 3:
-          return { label: "Strong", color: "green" };
-        case 4:
-          return { label: "Very Strong", color: "darkgreen" };
+      if (type === "pin") {
+        if (password.length < 9) return { label: "Weak", color: "red" };
+        if (password.length < 15) return { label: "Moderate", color: "orange" };
+        if (password.length < 20) return { label: "Strong", color: "green" };
+        return { label: "Very Strong", color: "darkgreen" };
+      }
+    
+      if (type === "memorable") {
+    const words = password.split("-");
+    if (words.length < 3) return { label: "Weak", color: "red" };
+    if (words.length >= 3 && words.length <= 7) return { label: "Moderate", color: "orange" };
+    if (words.length > 7) return { label: "Strong", color: "green" };
+  }
+    
+      // Default (secure)
+      // let strength = 0;
+      // if (password.length >= 10) strength++;
+      // if (/[A-Z]/.test(password)) strength++;
+      // if (/[0-9]/.test(password)) strength++;
+      // if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    
+      // switch (strength) {
+      //   case 0:
+      //   case 1:
+      //     return { label: "Weak", color: "red" };
+      //   case 2:
+      //     return { label: "Moderate", color: "orange" };
+      //   case 3:
+      //     return { label: "Strong", color: "green" };
+      //   case 4:
+      //     return { label: "Very Strong", color: "darkgreen" };
+      // }
+  }
+
+
+    async function fetchWords(count) {
+      try {
+        const response = await fetch(`https://random-word-api.herokuapp.com/word?number=${count}`);
+        const words = await response.json();
+        return words;
+      } catch (e) {
+        console.warn("Using fallback word list due to fetch error:", e);
+        let words = [];
+        for (let i = 0; i < count; i++) {
+          const word = fallbackWordList[Math.floor(Math.random() * fallbackWordList.length)];
+          words.push(word);
+        }
+        return words;
       }
     }
 
-    function generatePassword() {
+    async function generatePassword() {
       const length = parseInt(lengthSlider.value);
       const includeNumbers = document.getElementById("includeNumbers").checked;
       const includeSymbols = document.getElementById("includeSymbols").checked;
@@ -310,19 +335,15 @@
           password += Math.floor(Math.random() * 10);
         }
       } else if (selectedType === "memorable") {
-        let wordsNeeded = Math.ceil(length / 6);
-        let words = [];
-        for (let i = 0; i < wordsNeeded; i++) {
-          const word = wordList[Math.floor(Math.random() * wordList.length)];
-          words.push(word);
-        }
+        const wordsNeeded = Math.ceil(length / 6);
+        const words = await fetchWords(wordsNeeded);
         password = words.join("-").slice(0, length);
       }
 
       passwordDisplay.textContent = password;
       copiedMessage.style.display = "none";
 
-      const { label, color } = calculateStrength(password);
+      const { label, color } = calculateStrength(password, selectedType);
       strengthDisplay.textContent = `Strength: ${label}`;
       strengthDisplay.style.color = color;
     }
